@@ -18,7 +18,14 @@ URLS = [
     "https://www.bayut.com/for-sale/property/dubai/jumeirah-lake-towers/cluster-f/"
 ]
 
-sent_links = set(json.loads(os.environ.get("SENT_LINKS", "[]")))
+# Load sent links from environment (safe default)
+try:
+    raw_sent = os.environ.get("SENT_LINKS", "[]").strip()
+    if not raw_sent:
+        raw_sent = "[]"
+    sent_links = set(json.loads(raw_sent))
+except json.JSONDecodeError:
+    sent_links = set()
 
 def send_whatsapp(message):
     """Send a WhatsApp message via UltraMsg API."""
@@ -67,3 +74,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
