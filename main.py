@@ -18,13 +18,14 @@ URLS = [
     "https://www.bayut.com/for-sale/property/dubai/jumeirah-lake-towers/cluster-f/"
 ]
 
-# Load sent links from environment (safe default)
-try:
-    raw_sent = os.environ.get("SENT_LINKS", "[]").strip()
-    if not raw_sent:
-        raw_sent = "[]"
-    sent_links = set(json.loads(raw_sent))
-except json.JSONDecodeError:
+# Load sent links from environment safely
+raw_sent = os.environ.get("SENT_LINKS", "").strip()
+if raw_sent:
+    try:
+        sent_links = set(json.loads(raw_sent))
+    except json.JSONDecodeError:
+        sent_links = set()
+else:
     sent_links = set()
 
 def send_whatsapp(message):
@@ -70,8 +71,10 @@ def main():
                 message = f"🏠 {listing['title']}\n💰 {listing['price']}\n🔗 {listing['link']}"
                 send_whatsapp(message)
                 new_sent_links.add(listing["link"])
-    print("::set-output name=SENT_LINKS::" + json.dumps(list(new_sent_links)))
+    # Save updated list back to GitHub Actions
+    print(f"::set-output name=SENT_LINKS::{json.dumps(list(new_sent_links))}")
 
 if __name__ == "__main__":
     main()
+
 
